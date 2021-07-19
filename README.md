@@ -17,8 +17,8 @@
 
 0. 创建SQLite数据库，路径在application-dev.properties下面修改
 
-1. 启动java项目之后，浏览器访问http://localhost:9090/，出现跳转页面，说明启动成功
-2. 用Postman发送post请求到http://localhost:9090/count，请求体内容是要**统计的url**，后台会**根据ip**进行计数统计。后台记录该ip第一次请求的设备、时间
+1. 启动java项目之后，浏览器访问[http://localhost:9090/](http://localhost:9090/)，出现跳转页面，说明启动成功
+2. 用Postman发送post请求到[http://localhost:9090/count](http://localhost:9090/count)，请求体内容是要**统计的url**，后台会**根据ip**进行计数统计。后台记录该ip第一次请求的设备、时间
 
 参考文章
 
