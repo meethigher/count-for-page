@@ -1,4 +1,4 @@
-# [网页访问人数统计脚本](https://meethigher.top/blog/2021/graduation/)
+# [网页访问人数统计脚本](https://meethigher.top/blog/2021/count-for-page/)
 
 之所以要实现这个脚本，还是受[不蒜子](http://busuanzi.ibruce.info/)启发。
 
