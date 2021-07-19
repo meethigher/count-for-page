@@ -28,11 +28,11 @@
 
 页面访问时，前端页面在所有资源加载完毕之后，携带当前网页url，开始执行ajax请求，获取访问总人数。
 
-![{% asset_img 1.png %}](http://localhost/blog/2021/count-for-page/1.png)
+![](https://meethigher.top/blog/2021/count-for-page/1.png)
 
 后台的数据如下，两张表通过vId来进行关联。
 
-![{% asset_img 2.png %}](http://localhost/blog/2021/count-for-page/2.png)
+![](https://meethigher.top/blog/2021/count-for-page/2.png)
 
 遇到的难题
 
