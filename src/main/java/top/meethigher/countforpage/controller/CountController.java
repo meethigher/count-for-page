@@ -1,10 +1,12 @@
 package top.meethigher.countforpage.controller;
 
 import org.springframework.web.bind.annotation.*;
+import top.meethigher.countforpage.dto.TopResponse;
 import top.meethigher.countforpage.service.CountService;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 /**
  * CountController
@@ -28,4 +30,10 @@ public class CountController {
     public Integer getStatisticsByUrl(HttpServletRequest request, @RequestBody String url) {
         return countService.getStatistic(request, url);
     }
+
+    @PostMapping(value = "/top")
+    public List<TopResponse> updateLocation(){
+        return countService.getTop();
+    }
+
 }

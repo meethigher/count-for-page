@@ -1,6 +1,9 @@
 package top.meethigher.countforpage.entity;
 
+import org.springframework.format.annotation.DateTimeFormat;
+
 import javax.persistence.*;
+import java.util.Date;
 
 /**
  * WebsiteIP
@@ -21,8 +24,11 @@ public class IP {
 
     private String userAgent;
 
-
     private String firstVisitTime;
+
+    private String location;
+
+    private String referer;
 
     @ManyToOne(targetEntity = Visit.class)
     @JoinColumn(name = "vId", referencedColumnName = "vId")
@@ -64,8 +70,23 @@ public class IP {
         return firstVisitTime;
     }
 
+    public String getReferer() {
+        return referer;
+    }
+
+    public void setReferer(String referer) {
+        this.referer = referer;
+    }
+
     public void setFirstVisitTime(String firstVisitTime) {
         this.firstVisitTime = firstVisitTime;
     }
 
+    public String getLocation() {
+        return location;
+    }
+
+    public void setLocation(String location) {
+        this.location = location;
+    }
 }

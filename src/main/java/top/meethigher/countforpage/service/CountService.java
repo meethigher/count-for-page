@@ -1,6 +1,9 @@
 package top.meethigher.countforpage.service;
 
+import top.meethigher.countforpage.dto.TopResponse;
+
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 /**
  * CountService
@@ -25,4 +28,10 @@ public interface CountService {
      * @return
      */
     Integer getStatistic(HttpServletRequest request,String url);
+
+    /**
+     * 获取最新访问记录
+     * @return
+     */
+    List<TopResponse> getTop();
 }

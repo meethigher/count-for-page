@@ -44,23 +44,19 @@
 参考文章
 
 * [springboot（服务端接口）获取URL请求参数的几种方法](https://www.cnblogs.com/zhanglijun/p/9403483.html)
-
 * [SpringBoot整合Sqlite数据库流程](https://www.cnblogs.com/zblwyj/p/10668803.html)
-
 * [sqlite配置下载安装及使用教程](https://blog.csdn.net/qq_16093323/article/details/88226397)
-
 * [Spring Data JPA 使用 SQLite](https://blog.csdn.net/rocshaw/article/details/102495924)
-
 * [JPA注解添加唯一约束_](https://blog.csdn.net/qq_38705025/article/details/86636818)
-
 * [java获取请求的url地址 ](https://www.cnblogs.com/pxblog/p/10523013.html)
-
 * [用Java来获取访问者真实的IP地址](https://blog.csdn.net/qq_36411874/article/details/79938439)
-
 * [原生JS实现ajax 发送post请求 ](https://www.cnblogs.com/e0yu/p/7055347.html)
-
 * [nginx配置ssl证书实现https ](https://www.cnblogs.com/zhoudawei/p/9257276.html)
-
 * [Apache设置反向代理](https://blog.csdn.net/zhangrouzhu/article/details/80986082)
-
 * [SpringBoot配置SSL证书HTTPS详细流程](https://blog.csdn.net/qq_20051535/article/details/108249482)
+
+更新记录
+
+* 2021-07-23：新增通知功能、自动获取ip地址。添加获取referer
+
+* 2021-07-19：初始化count-for-page，仅包含统计功能
