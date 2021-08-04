@@ -18,7 +18,6 @@ public class TopResponse {
     private String userAgent;
     private String url;
     private String location;
-    private String referer;
 
     public String getLocation() {
         return location;
@@ -60,13 +59,6 @@ public class TopResponse {
         this.url = url;
     }
 
-    public String getReferer() {
-        return referer;
-    }
-
-    public void setReferer(String referer) {
-        this.referer = referer;
-    }
 
     @Override
     public String toString() {

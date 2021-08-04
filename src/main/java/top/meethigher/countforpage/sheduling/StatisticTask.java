@@ -37,7 +37,7 @@ public class StatisticTask {
     CountService countService;
 
     @Async
-    @Scheduled(cron = "0 0 8 * * ? ")
+    @Scheduled(cron = "0 59 23 * * ? ")
     public void countByDay() {
         List<TopResponse> responses = countService.getTop();
         try {
@@ -59,10 +59,10 @@ public class StatisticTask {
             throw new RuntimeException("没有查到数据");
         }
         StringBuilder builder = new StringBuilder("<html><body><table border=\"1\"><tbody><thead>" +
-                "<tr><th>url</th><th>ip</th><th>位置</th><th>时间</th><th>来源</th><th>设备</th></thead>");
+                "<tr><th>url</th><th>ip</th><th>位置</th><th>时间</th><th>设备</th></thead>");
         responses.stream().forEach(x -> {
-            String pattern = "<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>";
-            String row = String.format(pattern, x.getUrl(), x.getIp(), x.getLocation(), x.getFirstVisitTime(), x.getReferer(), x.getUserAgent());
+            String pattern = "<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>";
+            String row = String.format(pattern, x.getUrl(), x.getIp(), x.getLocation(), x.getFirstVisitTime(), x.getUserAgent());
             builder.append(row);
         });
         builder.append("</tbody></table></body></html>");

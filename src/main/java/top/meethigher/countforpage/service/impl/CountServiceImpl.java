@@ -161,7 +161,6 @@ public class CountServiceImpl implements CountService {
         IP ip = new IP();
         ip.setIp(HttpUtils.getIpAddr(request));
         ip.setUserAgent(HttpUtils.getUserAgent(request));
-        ip.setReferer(HttpUtils.getReferer(request));
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         ip.setFirstVisitTime(sdf.format(new Date()));
         LocationInfo object = restTemplate.getForObject(String.format(GET_LOCATION_API, ip.getIp()), LocationInfo.class);

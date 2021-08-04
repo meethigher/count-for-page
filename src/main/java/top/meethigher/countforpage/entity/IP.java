@@ -28,7 +28,6 @@ public class IP {
 
     private String location;
 
-    private String referer;
 
     @ManyToOne(targetEntity = Visit.class)
     @JoinColumn(name = "vId", referencedColumnName = "vId")
@@ -68,14 +67,6 @@ public class IP {
 
     public String getFirstVisitTime() {
         return firstVisitTime;
-    }
-
-    public String getReferer() {
-        return referer;
-    }
-
-    public void setReferer(String referer) {
-        this.referer = referer;
     }
 
     public void setFirstVisitTime(String firstVisitTime) {

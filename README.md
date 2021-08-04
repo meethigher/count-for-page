@@ -1,5 +1,13 @@
 # [网页访问人数统计脚本](https://meethigher.top/blog/2021/count-for-page/)
 
+更新记录
+
+* 2021-08-05：删除referer。新增通过Java模板引擎freeMarker渲染统计页面
+
+* 2021-07-23：新增通知功能、自动获取ip地址。添加获取referer
+
+* 2021-07-19：初始化count-for-page，仅包含统计功能
+
 [meethigher/count-for-page: 类似于“不蒜子”的统计功能，根据ip来统计页面访问人数](https://github.com/meethigher/count-for-page)
 
 之所以要实现这个脚本，还是受[不蒜子](http://busuanzi.ibruce.info/)启发。
@@ -55,8 +63,3 @@
 * [Apache设置反向代理](https://blog.csdn.net/zhangrouzhu/article/details/80986082)
 * [SpringBoot配置SSL证书HTTPS详细流程](https://blog.csdn.net/qq_20051535/article/details/108249482)
 
-更新记录
-
-* 2021-07-23：新增通知功能、自动获取ip地址。添加获取referer
-
-* 2021-07-19：初始化count-for-page，仅包含统计功能
