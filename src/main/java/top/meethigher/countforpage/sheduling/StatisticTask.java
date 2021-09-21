@@ -44,7 +44,7 @@ public class StatisticTask {
             MimeMessage mimeMessage = javaMailSender.createMimeMessage();
             MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage, true);
             String time = new SimpleDateFormat("MM月dd日").format(new Date());
-            mimeMessageHelper.setSubject(time+"访问量"+responses.size()+"次");
+            mimeMessageHelper.setSubject(time + "访问量" + responses.size() + "次");
             mimeMessageHelper.setTo(mailTo);
             mimeMessageHelper.setFrom(mailFrom);
             mimeMessage.setContent(generateHtml(responses), "text/html;charset=utf-8");
@@ -59,10 +59,10 @@ public class StatisticTask {
             throw new RuntimeException("没有查到数据");
         }
         StringBuilder builder = new StringBuilder("<html><body><table border=\"1\"><tbody><thead>" +
-                "<tr><th>url</th><th>ip</th><th>位置</th><th>时间</th><th>设备</th></thead>");
+                "<tr><th>url</th><th>来源</th><th>ip</th><th>位置</th><th>时间</th><th>设备</th></thead>");
         responses.stream().forEach(x -> {
-            String pattern = "<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>";
-            String row = String.format(pattern, x.getUrl(), x.getIp(), x.getLocation(), x.getFirstVisitTime(), x.getUserAgent());
+            String pattern = "<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>";
+            String row = String.format(pattern, x.getUrl(), x.getOriginReferer(), x.getIp(), x.getLocation(), x.getFirstVisitTime(), x.getUserAgent());
             builder.append(row);
         });
         builder.append("</tbody></table></body></html>");

@@ -1,9 +1,5 @@
 package top.meethigher.countforpage.dto;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-
-import java.util.Date;
-
 /**
  * TopResponse
  *
@@ -17,6 +13,7 @@ public class TopResponse {
     private String firstVisitTime;
     private String userAgent;
     private String url;
+    private String originReferer;
     private String location;
 
     public String getLocation() {
@@ -59,6 +56,13 @@ public class TopResponse {
         this.url = url;
     }
 
+    public String getOriginReferer() {
+        return originReferer;
+    }
+
+    public void setOriginReferer(String originReferer) {
+        this.originReferer = originReferer;
+    }
 
     @Override
     public String toString() {
@@ -67,6 +71,7 @@ public class TopResponse {
                 ", firstVisitTime='" + firstVisitTime + '\'' +
                 ", userAgent='" + userAgent + '\'' +
                 ", url='" + url + '\'' +
+                ", originReferer='" + originReferer + '\'' +
                 ", location='" + location + '\'' +
                 '}';
     }

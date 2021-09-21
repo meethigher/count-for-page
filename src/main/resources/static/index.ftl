@@ -3,39 +3,47 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-    <title>${title}</title>
+    <title>${title!"null"}</title>
     <link rel="stylesheet" href="layui/css/layui.css">
 </head>
 <body>
-<table class="layui-table">
-    <colgroup>
-        <col width="150">
-        <col width="150">
-        <col width="150">
-        <col>
-        <col>
-    </colgroup>
-    <thead>
-    <tr>
-        <th>ip</th>
-        <th>位置</th>
-        <th>时间</th>
-        <th>设备</th>
-        <th>访问</th>
-    </tr>
-    </thead>
-    <tbody>
-    <#list today as item>
+<#--https://www.cnblogs.com/panchanggui/p/9342246.html-->
+<#if today??>
+    <table class="layui-table">
+        <colgroup>
+            <col width="150">
+            <col width="150">
+            <col width="150">
+            <col>
+            <col>
+            <col>
+        </colgroup>
+        <thead>
         <tr>
-            <td>${item.ip}</td>
-            <td>${item.location}</td>
-            <td>${item.firstVisitTime}</td>
-            <td>${item.userAgent}</td>
-            <td>${item.url}</td>
+            <th>ip</th>
+            <th>位置</th>
+            <th>时间</th>
+            <th>设备</th>
+            <th>访问</th>
+            <th>来源</th>
         </tr>
-    </#list>
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+        <#list today as item>
+            <tr>
+                <td>${item.ip!"null"}</td>
+                <td>${item.location!"null"}</td>
+                <td>${item.firstVisitTime!"null"}</td>
+                <td>${item.userAgent!"null"}</td>
+                <td>${item.url!"null"}</td>
+                <td>${item.originReferer!"null"}</td>
+            </tr>
+        </#list>
+        </tbody>
+    </table>
+<#else >
+    <h1 align="center">nobody</h1>
+</#if>
 <script src="layui/layui.js"></script>
 </body>
 </html>

@@ -4,7 +4,7 @@ import javax.persistence.*;
 import java.util.Set;
 
 /**
- * WebsiteVisit
+ * 用于统计每个url访问的总次数
  *
  * @author kit chen
  * @github https://github.com/meethigher
@@ -19,6 +19,7 @@ public class Visit {
     private Integer vId;
 
     private String url;
+
 
     private Integer count;
 

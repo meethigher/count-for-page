@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * CountController
@@ -33,5 +34,32 @@ public class CountController {
     @PostMapping(value = "/count")
     public Integer getStatisticsByUrl(HttpServletRequest request, @RequestBody String url) {
         return countService.getStatistic(request, url);
+    }
+
+
+
+    @RequestMapping("/aaa")
+    public String aaa(HttpServletRequest request){
+        test(request);
+        return "bbb";
+    }
+    private SimpleDateFormat get(){
+        return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss:SSS");
+    }
+
+    private String test(HttpServletRequest request){
+        SimpleDateFormat sdf = get();
+        CompletableFuture.runAsync(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Thread.sleep(5000);
+                    System.out.println("睡醒了 "+sdf.format(new Date()));
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        return "aaa";
     }
 }

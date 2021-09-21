@@ -6,6 +6,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.*;
 import java.net.URL;
 import java.net.URLConnection;
+import java.text.SimpleDateFormat;
 import java.util.Map;
 import java.util.Set;
 
@@ -17,7 +18,17 @@ import java.util.Set;
  * @blog https://meethigher.top
  * @time 2021/7/19
  */
-public class HttpUtils {
+public class Utils {
+
+    /**
+     * 将sdf与当前线程绑定，避免线程安全问题
+     */
+    public static final ThreadLocal<SimpleDateFormat> sdfThreadLocal = new ThreadLocal<SimpleDateFormat>() {
+        @Override
+        protected SimpleDateFormat initialValue() {
+            return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss:SSS");
+        }
+    };
     /**
      * 获取真实ip
      *

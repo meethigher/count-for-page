@@ -27,13 +27,11 @@ public class HtmlController {
     @GetMapping(value="/today")
     public String today(ModelMap map){
         List<TopResponse> top = countService.getTop();
-        if(ObjectUtils.isEmpty(top)){
-            return null;
-        }else{
+        if(!ObjectUtils.isEmpty(top)){
             String time = new SimpleDateFormat("MM月dd日").format(new Date());
             map.put("title",time+"统计"+top.size()+"条");
             map.put("today",top);
-            return "/index";
         }
+        return "/index";
     }
 }
