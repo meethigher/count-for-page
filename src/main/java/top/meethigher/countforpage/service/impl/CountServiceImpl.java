@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.client.RestTemplate;
 import top.meethigher.countforpage.dto.LocationInfo;
+import top.meethigher.countforpage.dto.SaveInfo;
 import top.meethigher.countforpage.dto.TopResponse;
 import top.meethigher.countforpage.entity.IP;
 import top.meethigher.countforpage.entity.Visit;
@@ -60,6 +61,44 @@ public class CountServiceImpl implements CountService {
         return getStatistic(request, url);
     }
 
+
+    /**
+     * 异步执行数据更新，可以加快接口访问速度
+     *
+     * @author chenchuancheng
+     * @since 2021/9/20 16:48
+     */
+    private void asyncAsync(String url, HttpServletRequest request) {
+        SimpleDateFormat sdf = Utils.sdfThreadLocal.get();
+        SaveInfo saveInfo = new SaveInfo(url, Utils.getUserAgent(request), Utils.getOriginReferer(request), Utils.getIpAddr(request));
+        CompletableFuture<Integer> future = CompletableFuture.supplyAsync(new Supplier<Integer>() {
+            @Override
+            public Integer get() {
+                Visit visit = verifyVisit(saveInfo.getUrl());
+                Integer count = visit.getCount();
+                //之所有不用visit.getIp()，是因为在异步线程里会有懒加载问题，具体为啥不知道。
+                List<String> ipList = ipRepository.findIpByVid(visit.getvId());
+                if (ObjectUtils.isEmpty(ipList)) {
+                    IP ip = getFullIP(url, saveInfo);
+                    return update(ip, visit);
+                }
+                if (!ipList.contains(saveInfo.getIp())) {
+                    IP ip = getFullIP(url, saveInfo);
+                    return update(ip, visit);
+                }
+                return count;
+            }
+        });
+        //future成功后的回调
+        future.thenAccept(integer -> System.out.println(sdf.format(new Date()) + " success 最新访问数" + integer));
+        //future异常后的回调。这个必须要有，不然即使有异常也没有日志。
+        future.exceptionally(throwable -> {
+            throwable.printStackTrace();
+            System.out.println(sdf.format(new Date()) + " failure");
+            return null;
+        });
+    }
+
     /**
      * 之前的做法，导致接口访问太慢了。
      * 现在的做法是直接返回上次的数据，本次的更新操作、ip信息的查询交给异步线程后台执行。
@@ -106,43 +145,6 @@ public class CountServiceImpl implements CountService {
         visitRepository.save(visit);
         SimpleDateFormat sdf = Utils.sdfThreadLocal.get();
         return count;
-    }
-
-
-    /**
-     * 异步执行数据更新，可以加快接口访问速度
-     *
-     * @author chenchuancheng
-     * @since 2021/9/20 16:48
-     */
-    private void asyncAsync(String url, HttpServletRequest request) {
-        SimpleDateFormat sdf = Utils.sdfThreadLocal.get();
-        CompletableFuture<Integer> future = CompletableFuture.supplyAsync(new Supplier<Integer>() {
-            @Override
-            public Integer get() {
-                Visit visit = verifyVisit(url);
-                Integer count = visit.getCount();
-                //之所有不用visit.getIp()，是因为在异步线程里会有懒加载问题，具体为啥不知道。
-                List<String> ipList = ipRepository.findIpByVid(visit.getvId());
-                if (ObjectUtils.isEmpty(ipList)) {
-                    IP ip = getFullIP(url, request);
-                    return update(ip, visit);
-                }
-                if (!ipList.contains(Utils.getIpAddr(request))) {
-                    IP ip = getFullIP(url, request);
-                    return update(ip, visit);
-                }
-                return count;
-            }
-        });
-        //future成功后的回调
-        future.thenAccept(integer -> System.out.println(sdf.format(new Date()) + " success"));
-        //future异常后的回调。这个必须要有，不然即使有异常也没有日志。
-        future.exceptionally(throwable -> {
-            throwable.printStackTrace();
-            System.out.println(sdf.format(new Date()) + " failure");
-            return null;
-        });
     }
 
 
@@ -225,16 +227,16 @@ public class CountServiceImpl implements CountService {
      * 获取IP对象，里面存储访问者的详细信息
      *
      * @param url
-     * @param request
+     * @param info
      * @return
      */
-    private IP getFullIP(String url, HttpServletRequest request) {
+    private IP getFullIP(String url, SaveInfo info) {
         IP ip = new IP();
-        ip.setIp(Utils.getIpAddr(request));
-        ip.setUserAgent(Utils.getUserAgent(request));
+        ip.setIp(info.getIp());
+        ip.setUserAgent(info.getUserAgent());
         SimpleDateFormat sdf = Utils.sdfThreadLocal.get();
         ip.setFirstVisitTime(sdf.format(new Date()));
-        ip.setOriginReferer(request.getHeader("origin-referer"));
+        ip.setOriginReferer(info.getOriginReferer());
         ip.setOriginUrl(url);
         //通过第三方api获取ip的详细信息
         LocationInfo object = restTemplate.getForObject(String.format(GET_LOCATION_API, ip.getIp()), LocationInfo.class);

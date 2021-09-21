@@ -56,6 +56,68 @@
    * 获取ip信息：通过request获取到ip，再调用第三方api获取ip的地理位置
    * 入库：将以上所有获取到的数据入库
 
+```java
+private void asyncAsync(String url, HttpServletRequest request) {
+    SimpleDateFormat sdf = Utils.sdfThreadLocal.get();
+    SaveInfo saveInfo = new SaveInfo(url, Utils.getUserAgent(request), Utils.getOriginReferer(request), Utils.getIpAddr(request));
+    CompletableFuture<Integer> future = CompletableFuture.supplyAsync(new Supplier<Integer>() {
+        @Override
+        public Integer get() {
+            Visit visit = verifyVisit(saveInfo.getUrl());
+            Integer count = visit.getCount();
+            //之所有不用visit.getIp()，是因为在异步线程里会有懒加载问题，具体为啥不知道。
+            List<String> ipList = ipRepository.findIpByVid(visit.getvId());
+            if (ObjectUtils.isEmpty(ipList)) {
+                IP ip = getFullIP(url, saveInfo);
+                return update(ip, visit);
+            }
+            if (!ipList.contains(saveInfo.getIp())) {
+                IP ip = getFullIP(url, saveInfo);
+                return update(ip, visit);
+            }
+            return count;
+        }
+    });
+    //future成功后的回调
+    future.thenAccept(integer -> System.out.println(sdf.format(new Date()) + " success 最新访问数" + integer));
+    //future异常后的回调。这个必须要有，不然即使有异常也没有日志。
+    future.exceptionally(throwable -> {
+        throwable.printStackTrace();
+        System.out.println(sdf.format(new Date()) + " failure");
+        return null;
+    });
+}
+    
+/**
+ * 之前的做法，导致接口访问太慢了。
+ * 现在的做法是直接返回上次的数据，本次的更新操作、ip信息的查询交给异步线程后台执行。
+ *
+ * @param request
+ * @param url
+ * @return
+ */
+@Override
+public Integer getStatistic(HttpServletRequest request, String url) {
+    System.out.println(url);
+    SimpleDateFormat sdf = Utils.sdfThreadLocal.get();
+    
+    System.out.println(sdf.format(new Date()) + " start");
+    
+    Visit visit = verifyVisit(url);
+    System.out.println(sdf.format(new Date()) + " verifyVisit");
+    
+    
+    Integer count = visit.getCount();
+    System.out.println(sdf.format(new Date()) + " getCount");
+    
+    asyncAsync(url, request);
+    
+    System.out.println(sdf.format(new Date()) + " returnCount");
+    //防止太难看
+    return count == 0 ? 1 : count;
+}
+```
+
 ![通过CompletableFuture实现后台运行](https://meethigher.top/blog/2021/count-for-page/3.png)
 
 至于java模板引擎，我也是第一次接触，spring推荐Thymeleaf，但我个人感觉freeMarker语法更简单一点。直接放上上手的例子。

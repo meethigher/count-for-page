@@ -35,31 +35,4 @@ public class CountController {
     public Integer getStatisticsByUrl(HttpServletRequest request, @RequestBody String url) {
         return countService.getStatistic(request, url);
     }
-
-
-
-    @RequestMapping("/aaa")
-    public String aaa(HttpServletRequest request){
-        test(request);
-        return "bbb";
-    }
-    private SimpleDateFormat get(){
-        return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss:SSS");
-    }
-
-    private String test(HttpServletRequest request){
-        SimpleDateFormat sdf = get();
-        CompletableFuture.runAsync(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    Thread.sleep(5000);
-                    System.out.println("睡醒了 "+sdf.format(new Date()));
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-        return "aaa";
-    }
 }

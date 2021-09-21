@@ -84,6 +84,15 @@ public class Utils {
     }
 
     /**
+     * 获取客户端访问网页的referer，此处是网页js通过ajax添加到请求头将referer进行了一个转发
+     * @param request
+     * @return
+     */
+    public static String getOriginReferer(HttpServletRequest request){
+        return request.getHeader("origin-referer");
+    }
+
+    /**
      * 获取来源链接
      * @param request
      * @return
