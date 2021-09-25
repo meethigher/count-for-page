@@ -109,6 +109,8 @@ public class CountServiceImpl implements CountService {
      */
     @Override
     public Integer getStatistic(HttpServletRequest request, String url) {
+        if (url.contains("localhost") || url.contains("127.0.0.1"))
+            return 9999;
         System.out.println(url);
         SimpleDateFormat sdf = Utils.sdfThreadLocal.get();
 
