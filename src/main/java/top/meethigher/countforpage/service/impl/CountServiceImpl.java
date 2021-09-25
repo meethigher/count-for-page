@@ -240,10 +240,14 @@ public class CountServiceImpl implements CountService {
         ip.setFirstVisitTime(sdf.format(new Date()));
         ip.setOriginReferer(info.getOriginReferer());
         ip.setOriginUrl(url);
-        //通过第三方api获取ip的详细信息
-        LocationInfo object = restTemplate.getForObject(String.format(GET_LOCATION_API, ip.getIp()), LocationInfo.class);
-        String loc = object.getCountry() + object.getRegionName() + object.getCity();
-        ip.setLocation(loc);
+        try{
+            //通过第三方api获取ip的详细信息
+            LocationInfo object = restTemplate.getForObject(String.format(GET_LOCATION_API, ip.getIp()), LocationInfo.class);
+            String loc = object.getCountry() + object.getRegionName() + object.getCity();
+            ip.setLocation(loc);
+        }catch (Exception e){
+            ip.setLocation("调用接口获取失败");
+        }
         return ip;
     }
 }
