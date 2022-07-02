@@ -2,11 +2,11 @@ package top.meethigher.countforpage.service.impl;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.client.RestTemplate;
-import top.meethigher.countforpage.dto.LocationInfo;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 import top.meethigher.countforpage.dto.SaveInfo;
 import top.meethigher.countforpage.dto.TopResponse;
 import top.meethigher.countforpage.entity.IP;
@@ -15,16 +15,13 @@ import top.meethigher.countforpage.repository.IPRepository;
 import top.meethigher.countforpage.repository.VisitRepository;
 import top.meethigher.countforpage.service.CountService;
 import top.meethigher.countforpage.utils.Utils;
+import top.meethigher.czip.IPSearcher;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
+import java.util.concurrent.ExecutorService;
 
 /**
  * CountServiceImpl
@@ -41,13 +38,16 @@ public class CountServiceImpl implements CountService {
 
 
     @Resource
-    VisitRepository visitRepository;
+    private VisitRepository visitRepository;
 
     @Resource
-    IPRepository ipRepository;
+    private IPRepository ipRepository;
 
     @Resource
-    RestTemplate restTemplate;
+    private ExecutorService asyncExecutor;
+
+    @Resource
+    private RestTemplate restTemplate;
 
     /**
      * 通过ip获取详细信息api
@@ -55,77 +55,49 @@ public class CountServiceImpl implements CountService {
     private final static String GET_LOCATION_API = "http://ip-api.com/json/%s?lang=zh-CN";
 
 
-    @Override
-    public Integer getStatistic(HttpServletRequest request) {
-        String url = Utils.getUrl(request);
-        return getStatistic(request, url);
-    }
-
-
-    /**
-     * 异步执行数据更新，可以加快接口访问速度
-     *
-     * @author chenchuancheng
-     * @since 2021/9/20 16:48
-     */
-    private void asyncAsync(String url, HttpServletRequest request) {
-        SimpleDateFormat sdf = Utils.sdfThreadLocal.get();
-        SaveInfo saveInfo = new SaveInfo(url, Utils.getUserAgent(request), Utils.getOriginReferer(request), Utils.getIpAddr(request));
-        CompletableFuture<Integer> future = CompletableFuture.supplyAsync(new Supplier<Integer>() {
-            @Override
-            public Integer get() {
-                Visit visit = verifyVisit(saveInfo.getUrl());
-                Integer count = visit.getCount();
-                //之所有不用visit.getIp()，是因为在异步线程里会有懒加载问题，具体为啥不知道。
-                List<String> ipList = ipRepository.findIpByVid(visit.getvId());
-                if (ObjectUtils.isEmpty(ipList)) {
-                    IP ip = getFullIP(url, saveInfo);
-                    return update(ip, visit);
-                }
-                if (!ipList.contains(saveInfo.getIp())) {
-                    IP ip = getFullIP(url, saveInfo);
-                    return update(ip, visit);
-                }
-                return count;
-            }
-        });
-        //future成功后的回调
-        future.thenAccept(integer -> System.out.println(sdf.format(new Date()) + " success 最新访问数" + integer));
-        //future异常后的回调。这个必须要有，不然即使有异常也没有日志。
-        future.exceptionally(throwable -> {
-            throwable.printStackTrace();
-            System.out.println(sdf.format(new Date()) + " failure");
-            return null;
-        });
-    }
-
     /**
      * 之前的做法，导致接口访问太慢了。
      * 现在的做法是直接返回上次的数据，本次的更新操作、ip信息的查询交给异步线程后台执行。
      *
-     * @param request
      * @param url
      * @return
      */
     @Override
-    public Integer getStatistic(HttpServletRequest request, String url) {
-        if (url.contains("localhost") || url.contains("127.0.0.1"))
+    public Integer getUserView(String url) {
+        //获取当前线程绑定的request
+        ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        if (attributes == null) {
+            return 4444;
+        }
+        HttpServletRequest request = attributes.getRequest();
+        if (url.contains("localhost") || url.contains("127.0.0.1")) {
             return 9999;
-        System.out.println(url);
-        SimpleDateFormat sdf = Utils.sdfThreadLocal.get();
-
-        System.out.println(sdf.format(new Date()) + " start");
+        }
 
         Visit visit = verifyVisit(url);
-        System.out.println(sdf.format(new Date()) + " verifyVisit");
 
 
         Integer count = visit.getCount();
-        System.out.println(sdf.format(new Date()) + " getCount");
 
-        asyncAsync(url, request);
-
-        System.out.println(sdf.format(new Date()) + " returnCount");
+        //异步执行数据更新，可以加快接口访问速度
+        //使用注解Async同样可以做到该功能，不过他的异步，需要在另一个bean里面定义异步方法。懒得再写一个类了。
+        SaveInfo saveInfo = new SaveInfo(url, Utils.getUserAgent(request), Utils.getOriginReferer(request), Utils.getIpAddr(request));
+        asyncExecutor.execute(() -> {
+            Visit visit1 = verifyVisit(saveInfo.getUrl());
+            Integer count1 = visit1.getCount();
+            //之所有不用visit.getIp()，是因为在异步线程里会有懒加载问题，具体为啥不知道(异步的话，连接已经被关闭了)。
+            List<String> ipList = ipRepository.findIpByVid(visit1.getvId());
+            if (ObjectUtils.isEmpty(ipList)) {
+                IP ip = getFullIP(url, saveInfo);
+                count1 = update(ip, visit1);
+            } else {
+                if (!ipList.contains(saveInfo.getIp())) {
+                    IP ip = getFullIP(url, saveInfo);
+                    count1 = update(ip, visit1);
+                }
+            }
+            log.info("{}--success 最新访问数{}", saveInfo.getUrl(), count1);
+        });
         //防止太难看
         return count == 0 ? 1 : count;
     }
@@ -145,7 +117,6 @@ public class CountServiceImpl implements CountService {
         Integer count = visit.getCount();
         visit.setCount(++count);
         visitRepository.save(visit);
-        SimpleDateFormat sdf = Utils.sdfThreadLocal.get();
         return count;
     }
 
@@ -193,7 +164,7 @@ public class CountServiceImpl implements CountService {
             return null;
         }
         List<TopResponse> responses = new LinkedList<>();
-        list.stream().forEach(x -> {
+        list.forEach(x -> {
             TopResponse response = new TopResponse();
             response.setUrl(x.getOriginUrl());
             response.setFirstVisitTime(x.getFirstVisitTime());
@@ -225,8 +196,34 @@ public class CountServiceImpl implements CountService {
     }
 
 
+//    /**
+//     * 获取IP对象，里面存储访问者的详细信息
+//     *
+//     * @param url
+//     * @param info
+//     * @return
+//     */
+//    private IP getFullIP(String url, SaveInfo info) {
+//        IP ip = new IP();
+//        ip.setIp(info.getIp());
+//        ip.setUserAgent(info.getUserAgent());
+//        SimpleDateFormat sdf = Utils.sdfThreadLocal.get();
+//        ip.setFirstVisitTime(sdf.format(new Date()));
+//        ip.setOriginReferer(info.getOriginReferer());
+//        ip.setOriginUrl(url);
+//        try{
+//            //通过第三方api获取ip的详细信息
+//            LocationInfo object = restTemplate.getForObject(String.format(GET_LOCATION_API, ip.getIp()), LocationInfo.class);
+//            String loc = object.getCountry() + object.getRegionName() + object.getCity();
+//            ip.setLocation(loc);
+//        }catch (Exception e){
+//            ip.setLocation("调用接口获取失败");
+//        }
+//        return ip;
+//    }
+
     /**
-     * 获取IP对象，里面存储访问者的详细信息
+     * 通过纯真ip数据库获取ip
      *
      * @param url
      * @param info
@@ -240,14 +237,9 @@ public class CountServiceImpl implements CountService {
         ip.setFirstVisitTime(sdf.format(new Date()));
         ip.setOriginReferer(info.getOriginReferer());
         ip.setOriginUrl(url);
-        try{
-            //通过第三方api获取ip的详细信息
-            LocationInfo object = restTemplate.getForObject(String.format(GET_LOCATION_API, ip.getIp()), LocationInfo.class);
-            String loc = object.getCountry() + object.getRegionName() + object.getCity();
-            ip.setLocation(loc);
-        }catch (Exception e){
-            ip.setLocation("调用接口获取失败");
-        }
+        //调用纯真ip获取ip
+        String location = IPSearcher.getInstance().search(ip.getIp());
+        ip.setLocation(location);
         return ip;
     }
 }

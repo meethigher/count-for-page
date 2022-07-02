@@ -9,6 +9,7 @@ package top.meethigher.countforpage.dto;
  * @time 2021/7/20
  */
 public class TopResponse {
+
     private String ip;
     private String firstVisitTime;
     private String userAgent;
@@ -66,13 +67,20 @@ public class TopResponse {
 
     @Override
     public String toString() {
-        return "TopResponse{" +
-                "ip='" + ip + '\'' +
-                ", firstVisitTime='" + firstVisitTime + '\'' +
-                ", userAgent='" + userAgent + '\'' +
-                ", url='" + url + '\'' +
-                ", originReferer='" + originReferer + '\'' +
-                ", location='" + location + '\'' +
-                '}';
+        final StringBuilder sb = new StringBuilder("{");
+        sb.append("\"ip\":\"")
+                .append(ip).append('\"');
+        sb.append(",\"firstVisitTime\":\"")
+                .append(firstVisitTime).append('\"');
+        sb.append(",\"userAgent\":\"")
+                .append(userAgent).append('\"');
+        sb.append(",\"url\":\"")
+                .append(url).append('\"');
+        sb.append(",\"originReferer\":\"")
+                .append(originReferer).append('\"');
+        sb.append(",\"location\":\"")
+                .append(location).append('\"');
+        sb.append('}');
+        return sb.toString();
     }
 }

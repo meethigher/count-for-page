@@ -1,4 +1,4 @@
-package top.meethigher.countforpage.sheduling;
+package top.meethigher.countforpage.task;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -36,7 +36,7 @@ public class StatisticTask {
     @Resource
     CountService countService;
 
-    @Async
+    @Async("asyncExecutor")
     @Scheduled(cron = "0 59 23 * * ? ")
     public void countByDay() {
         List<TopResponse> responses = countService.getTop();
@@ -54,6 +54,12 @@ public class StatisticTask {
         }
     }
 
+    /**
+     * 生成html邮件
+     *
+     * @param responses
+     * @return
+     */
     public String generateHtml(List<TopResponse> responses) {
         if (ObjectUtils.isEmpty(responses)) {
             throw new RuntimeException("没有查到数据");
@@ -69,6 +75,12 @@ public class StatisticTask {
         return builder.toString();
     }
 
+    /**
+     * 生成text邮件
+     *
+     * @param responses
+     * @return
+     */
     public String generateText(List<TopResponse> responses) {
         if (ObjectUtils.isEmpty(responses)) {
             return "今日没有访问";

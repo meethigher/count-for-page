@@ -1,10 +1,8 @@
 package top.meethigher.countforpage.entity;
 
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
-import java.util.Date;
 
 /**
  * 每有一个新ip访问，就会存一个IP
