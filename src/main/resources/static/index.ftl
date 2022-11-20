@@ -31,12 +31,12 @@
         <tbody>
         <#list today as item>
             <tr>
-                <td>${item.ip!"null"}</td>
-                <td>${item.location!"null"}</td>
+                <td>${item.ipAddr!"null"}</td>
+                <td>${item.ipLoc!"null"}</td>
                 <td>${item.firstVisitTime!"null"}</td>
-                <td>${item.userAgent!"null"}</td>
-                <td>${item.url!"null"}</td>
-                <td>${item.originReferer!"null"}</td>
+                <td>${item.device!"null"}</td>
+                <td>${item.targetLink!"null"}</td>
+                <td>${item.originLink!"null"}</td>
             </tr>
         </#list>
         </tbody>

@@ -1,0 +1,6 @@
+server:
+  ssl:
+    enabled: true
+    key-store: classpath:7549164_meethigher.top.pfx
+    key-store-password:
+    key-store-type: PKCS12

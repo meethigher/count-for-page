@@ -1,0 +1,25 @@
+server:
+  port: 54187
+  # 开启gzip压缩。默认超过2k以上h5c3js都会被压缩
+  compression:
+    enabled: true
+spring:
+  banner:
+    location: banner
+  profiles:
+    active: pro
+    include: freemarker,mail
+  mvc:
+    async:
+      request-timeout: 30000
+logging:
+  config: classpath:logback-diy.xml
+  # 相对路径则是相对当前应用路径，如log就是在jar包所在路径下存储
+  file:
+    path: /site/count-for-page/log
+
+# 邮件接收人
+receiver: meethigher@qq.com
+# 开放统计的域名
+domain: meethigher.top
+

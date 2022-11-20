@@ -1,0 +1,7 @@
+spring:
+  mail:
+    port: 80
+    host: smtp.mxhichina.com
+    username:
+    password:
+    protocol: smtp

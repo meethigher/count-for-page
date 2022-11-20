@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration debug="false">
+    <!--读取spring配置-->
+    <property resource="application.yml"/>
+    <springProperty scope="context" name="defaultPath" source="logging.file.path"/>
+    <!--使用spring配置属性-->
+    <property name="DEFAULT_PATH" value="${defaultPath}"/>
+
+    <!--使用spring提供的logback转换工具-->
+    <conversionRule conversionWord="clr" converterClass="org.springframework.boot.logging.logback.ColorConverter" />
+    <conversionRule conversionWord="wex" converterClass="org.springframework.boot.logging.logback.WhitespaceThrowableProxyConverter" />
+    <conversionRule conversionWord="wEx" converterClass="org.springframework.boot.logging.logback.ExtendedWhitespaceThrowableProxyConverter" />
+
+    <!--文件归档-->
+    <appender name="ARCHIVE"
+              class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${DEFAULT_PATH}/server.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${DEFAULT_PATH}/%d{yyyy-MM-dd,aux}/%d{yyyy-MM-dd-HH}.log
+            </fileNamePattern>
+            <cleanHistoryOnStart>true</cleanHistoryOnStart>
+            <totalSizeCap>10GB</totalSizeCap>
+            <maxHistory>168</maxHistory>
+        </rollingPolicy>
+        <append>true</append>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %5p ${PID} --- [%15.15t]%-40.40logger{39}: %m%n%wEx</pattern>
+            <charset>utf-8</charset>
+        </encoder>
+<!--        &lt;!&ndash; 此日志文件只记录info级别，不记录大于info级别的日志 &ndash;&gt;-->
+<!--        <filter class="ch.qos.logback.classic.filter.LevelFilter">-->
+<!--            <level>INFO</level>-->
+<!--            <onMatch>ACCEPT</onMatch>-->
+<!--            <onMismatch>DENY</onMismatch>-->
+<!--        </filter>-->
+    </appender>
+
+    <!--控制台，带颜色打印-->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <Target>System.out</Target>
+        <encoder>
+            <pattern>%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr(%5p) %clr(${PID}){magenta} %clr(---){faint} %clr([%15.15t]){faint} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %m%n%wEx</pattern>
+            <charset>utf-8</charset>
+        </encoder>
+        <!-- 此日志appender是为开发使用，只配置最底级别，控制台输出的日志级别是大于或等于此级别的日志信息 -->
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>DEBUG</level>
+        </filter>
+    </appender>
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="ARCHIVE"/>
+    </root>
+</configuration>

@@ -9,17 +9,60 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>top.meethigher</groupId>
-    <artifactId>count-for-page</artifactId>
-    <version>1.0</version>
-    <name>count-for-page</name>
-    <description>Demo project for Spring Boot</description>
+    <artifactId>count-page</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <name>count-page</name>
+    <description>count-page</description>
     <properties>
         <java.version>1.8</java.version>
+        <maven.compiler.source>8</maven.compiler.source>
+        <maven.compiler.target>8</maven.compiler.target>
+        <cz-ip.version>1.0</cz-ip.version>
+        <cache-store.version>1.1</cache-store.version>
+        <sqlite-jdbc.version>3.34.0</sqlite-jdbc.version>
+        <sqlite-dialect.version>0.1.2</sqlite-dialect.version>
+        <jodd-http.version>6.3.0</jodd-http.version>
     </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <!--ip查询支持-->
+            <dependency>
+                <groupId>top.meethigher</groupId>
+                <artifactId>cz-ip</artifactId>
+                <version>${cz-ip.version}</version>
+            </dependency>
+            <!--缓存支持-->
+            <dependency>
+                <groupId>top.meethigher</groupId>
+                <artifactId>cache-store</artifactId>
+                <version>${cache-store.version}</version>
+            </dependency>
+            <!--sqlite支持-->
+            <dependency>
+                <groupId>org.xerial</groupId>
+                <artifactId>sqlite-jdbc</artifactId>
+                <version>${sqlite-jdbc.version}</version>
+            </dependency>
+            <!--sqlite方言支持-->
+            <dependency>
+                <groupId>com.github.gwenn</groupId>
+                <artifactId>sqlite-dialect</artifactId>
+                <version>${sqlite-dialect.version}</version>
+            </dependency>
+            <!--http工具类-->
+            <dependency>
+                <groupId>org.jodd</groupId>
+                <artifactId>jodd-http</artifactId>
+                <version>${jodd-http.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
+            <artifactId>spring-boot-starter</artifactId>
         </dependency>
 
         <dependency>
@@ -27,40 +70,126 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
+
+        <!--web支持-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <!--freemarker模板引擎-->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-freemarker</artifactId>
         </dependency>
+
         <!--springboot-mail整合包-->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-mail</artifactId>
         </dependency>
+
+        <!--orm框架-->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/org.xerial/sqlite-jdbc -->
+
+
+        <!--ip查询支持-->
+        <dependency>
+            <groupId>top.meethigher</groupId>
+            <artifactId>cz-ip</artifactId>
+        </dependency>
+
+        <!--缓存支持-->
+        <dependency>
+            <groupId>top.meethigher</groupId>
+            <artifactId>cache-store</artifactId>
+        </dependency>
+
+        <!--sqlite支持-->
         <dependency>
             <groupId>org.xerial</groupId>
             <artifactId>sqlite-jdbc</artifactId>
-            <version>3.34.0</version>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/com.github.gwenn/sqlite-dialect -->
+
+        <!--sqlite方言支持-->
         <dependency>
             <groupId>com.github.gwenn</groupId>
             <artifactId>sqlite-dialect</artifactId>
-            <version>0.1.2</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.jodd</groupId>
+            <artifactId>jodd-http</artifactId>
+        </dependency>
 
     </dependencies>
 
     <build>
+        <finalName>count</finalName>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <fork>true</fork>
+                    <!--解决windows命令行窗口中文乱码-->
+                    <jvmArguments>-Dfile.encoding=UTF-8</jvmArguments>
+                    <layout>ZIP</layout>
+                    <includes>
+                        <!--这里是填写需要包含进去的jar，
+                            必须项目中的某些模块，会经常变动，那么就应该将其坐标写进来
+                            如果没有则non-exists ，表示不打包依赖
+                        -->
+                        <include>
+                            <groupId>non-exists</groupId>
+                            <artifactId>non-exists</artifactId>
+                        </include>
+                    </includes>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <!--此插件用于将依赖包抽出-->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-dependencies</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/lib</outputDirectory>
+                            <excludeTransitive>false</excludeTransitive>
+                            <stripVersion>false</stripVersion>
+                            <includeScope>runtime</includeScope>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
             </plugin>
         </plugins>
     </build>
