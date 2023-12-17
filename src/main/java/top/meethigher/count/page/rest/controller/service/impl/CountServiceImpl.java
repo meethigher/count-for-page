@@ -17,8 +17,11 @@ import top.meethigher.cache.CacheStore;
 import top.meethigher.count.page.entity.IP;
 import top.meethigher.count.page.entity.Link;
 import top.meethigher.count.page.repository.IPRepository;
+import top.meethigher.count.page.repository.IPv6Repository;
 import top.meethigher.count.page.repository.LinkRepository;
 import top.meethigher.count.page.rest.controller.service.CountService;
+import top.meethigher.count.page.utils.IPv4Validator;
+import top.meethigher.count.page.utils.IPv6Utils;
 import top.meethigher.czip.IPSearcher;
 
 import javax.annotation.Resource;
@@ -57,6 +60,9 @@ public class CountServiceImpl implements CountService {
     private LinkRepository linkRepository;
 
     @Resource
+    private IPv6Repository iPv6Repository;
+
+    @Resource
     private CacheStore<Integer, IP> cacheStore;
 
     @Resource
@@ -92,7 +98,11 @@ public class CountServiceImpl implements CountService {
         ip.setIpAddr(request.getHeader("x-forwarded-for"));
         //ip.setIpAddr(request.getRemoteAddr());
         ip.setFirstVisitTime(timeFormatter.format(LocalDateTime.now()));
-        ip.setIpLoc(IPSearcher.getInstance().search(ip.getIpAddr()));
+        if (IPv4Validator.isValidIPv4(ip.getIpAddr())) {
+            ip.setIpLoc(IPSearcher.getInstance().search(ip.getIpAddr()));
+        } else {
+            ip.setIpLoc(IPv6Utils.queryIPv6LocFromAPI(ip.getIpAddr()));
+        }
         //由于是静态页面，所以访问页面时，调用接口。此时接口拿到的referer就是访问的页面地址
         ip.setTargetLink(request.getHeader(HttpHeaders.REFERER));
         //获取客户端访问网页的referer，此处是网页js通过ajax添加到请求头将referer进行了一个转发。该功能需要配合我的主题使用

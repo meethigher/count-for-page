@@ -5,9 +5,13 @@ import top.meethigher.count.page.entity.IP;
 import top.meethigher.count.page.rest.controller.service.CountService;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Enumeration;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * CountController
@@ -23,6 +27,9 @@ public class CountController {
     @Resource
     private CountService countService;
 
+    @Resource
+    private HttpServletRequest httpServletRequest;
+
     @PostMapping("/count")
     public Integer linkCount(@RequestBody String linkUrl) {
         return countService.getTotalVisit(linkUrl);
@@ -33,9 +40,20 @@ public class CountController {
         return countService.getRecentIP(size);
     }
 
-    @GetMapping("todayIp")
+    @GetMapping("/todayIp")
     public List<IP> todayIP() {
         return countService.getTodayIP();
+    }
+
+    @GetMapping("/headers")
+    public Object headers() {
+        Map<String, String> headerMap = new LinkedHashMap<>();
+        Enumeration<String> headerNames = httpServletRequest.getHeaderNames();
+        while (headerNames.hasMoreElements()) {
+            String name = headerNames.nextElement();
+            headerMap.put(name, httpServletRequest.getHeader(name));
+        }
+        return headerMap;
     }
 
 
