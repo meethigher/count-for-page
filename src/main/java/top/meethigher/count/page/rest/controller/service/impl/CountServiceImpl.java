@@ -96,12 +96,16 @@ public class CountServiceImpl implements CountService {
         ip.setDevice(request.getHeader(HttpHeaders.USER_AGENT));
         //由于使用了nginx，我在nginx配置的x-forwarded-for。所以此处要拿代理ip
         ip.setIpAddr(request.getHeader("x-forwarded-for"));
-        //ip.setIpAddr(request.getRemoteAddr());
-        ip.setFirstVisitTime(timeFormatter.format(LocalDateTime.now()));
-        if (IPv4Validator.isValidIPv4(ip.getIpAddr())) {
-            ip.setIpLoc(IPSearcher.getInstance().search(ip.getIpAddr()));
+        if (ObjectUtils.isEmpty(ip.getIpAddr())) {
+            ip.setIpLoc("ip地址为空");
         } else {
-            ip.setIpLoc(IPv6Utils.queryIPv6LocFromAPI(ip.getIpAddr()));
+            //ip.setIpAddr(request.getRemoteAddr());
+            ip.setFirstVisitTime(timeFormatter.format(LocalDateTime.now()));
+            if (IPv4Validator.isValidIPv4(ip.getIpAddr())) {
+                ip.setIpLoc(IPSearcher.getInstance().search(ip.getIpAddr()));
+            } else {
+                ip.setIpLoc(IPv6Utils.queryIPv6LocFromAPI(ip.getIpAddr()));
+            }
         }
         //由于是静态页面，所以访问页面时，调用接口。此时接口拿到的referer就是访问的页面地址
         ip.setTargetLink(request.getHeader(HttpHeaders.REFERER));
