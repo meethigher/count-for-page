@@ -94,13 +94,19 @@ public class CountServiceImpl implements CountService {
     private IP createIP(HttpServletRequest request) {
         IP ip = new IP();
         ip.setDevice(request.getHeader(HttpHeaders.USER_AGENT));
-        //由于使用了nginx，我在nginx配置的x-forwarded-for。所以此处要拿代理ip
-        ip.setIpAddr(request.getHeader("x-forwarded-for"));
+        //由于使用了nginx，我在nginx配置的x-forwarded-for和Proxy-Client-IP。所以此处要拿代理ip
+        String pi = request.getHeader("x-forwarded-for");
+        if (ObjectUtils.isEmpty(pi)) {
+            pi = request.getHeader("Proxy-Client-IP");
+        }
+        if (ObjectUtils.isEmpty(pi)) {
+            pi = request.getRemoteAddr();
+        }
+        ip.setIpAddr(pi);
+        ip.setFirstVisitTime(timeFormatter.format(LocalDateTime.now()));
         if (ObjectUtils.isEmpty(ip.getIpAddr())) {
             ip.setIpLoc("ip地址为空");
         } else {
-            //ip.setIpAddr(request.getRemoteAddr());
-            ip.setFirstVisitTime(timeFormatter.format(LocalDateTime.now()));
             if (IPv4Validator.isValidIPv4(ip.getIpAddr())) {
                 ip.setIpLoc(IPSearcher.getInstance().search(ip.getIpAddr()));
             } else {
