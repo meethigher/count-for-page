@@ -159,7 +159,7 @@ public class CountServiceImpl implements CountService {
         if (attributes == null || attributes.getRequest() == null) {
             return -1;
         }
-        if (!linkUrl.contains(domain)) {
+        if (!linkUrl.startsWith(domain)) {
             return -1;
         }
         //获取该link的访问统计信息

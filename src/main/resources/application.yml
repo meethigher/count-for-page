@@ -21,5 +21,5 @@ logging:
 # 邮件接收人
 receiver: meethigher@qq.com
 # 开放统计的域名
-domain: meethigher.top
+domain: https://meethigher.top
 
