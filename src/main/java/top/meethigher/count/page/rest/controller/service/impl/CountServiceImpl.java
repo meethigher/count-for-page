@@ -3,13 +3,10 @@ package top.meethigher.count.page.rest.controller.service.impl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -22,6 +19,7 @@ import top.meethigher.count.page.repository.LinkRepository;
 import top.meethigher.count.page.rest.controller.service.CountService;
 import top.meethigher.count.page.utils.IPv4Validator;
 import top.meethigher.count.page.utils.IPv6Utils;
+import top.meethigher.count.page.utils.UrlUtils;
 import top.meethigher.czip.IPSearcher;
 
 import javax.annotation.Resource;
@@ -29,7 +27,6 @@ import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.ExecutorService;
@@ -52,6 +49,9 @@ public class CountServiceImpl implements CountService {
 
     @Value("${domain}")
     private String domain;
+
+    @Value("${protocol}")
+    private String protocol;
 
     @Resource
     private IPRepository ipRepository;
@@ -94,7 +94,9 @@ public class CountServiceImpl implements CountService {
     private IP createIP(HttpServletRequest request) {
         IP ip = new IP();
         ip.setDevice(request.getHeader(HttpHeaders.USER_AGENT));
-        //由于使用了nginx，我在nginx配置的x-forwarded-for和Proxy-Client-IP。所以此处要拿代理ip
+        /**
+         * 代理程序获取到远程ip，然后转发时将该请求头通过x-forwarded-for和Proxy-Client-IP给到真实程序
+         */
         String pi = request.getHeader("x-forwarded-for");
         if (ObjectUtils.isEmpty(pi)) {
             pi = request.getHeader("Proxy-Client-IP");
@@ -152,18 +154,29 @@ public class CountServiceImpl implements CountService {
     }
 
 
+    /**
+     * @param linkUrl 页面地址 该地址要求带着协议头
+     */
     @Override
     public Integer getTotalVisit(String linkUrl) {
+        boolean validUrl = UrlUtils.isValidUrl(linkUrl);
+        if (!validUrl) {
+            return -1;
+        }
+        String requestURI = UrlUtils.getRequestURI(linkUrl, false);
+        if (requestURI == null) {
+            return -1;
+        }
         //获取当前线程绑定的request
         ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
         if (attributes == null || attributes.getRequest() == null) {
             return -1;
         }
-        if (!linkUrl.startsWith(domain)) {
+        if (!requestURI.startsWith(domain)) {
             return -1;
         }
         //获取该link的访问统计信息
-        Link link = findByUrl(linkUrl);
+        Link link = findByUrl(requestURI);
         //异步操作添加数量
         HttpServletRequest request = attributes.getRequest();
         //创建ip信息
