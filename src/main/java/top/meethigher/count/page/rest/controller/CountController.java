@@ -1,5 +1,6 @@
 package top.meethigher.count.page.rest.controller;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 import top.meethigher.count.page.entity.IP;
 import top.meethigher.count.page.rest.controller.service.CountService;
@@ -29,6 +30,12 @@ public class CountController {
 
     @Resource
     private HttpServletRequest httpServletRequest;
+
+    @Value("${protocol}")
+    private String protocol;
+
+    @Value("${domain}")
+    private String domain;
 
     @PostMapping("/count")
     public Integer linkCount(@RequestBody String linkUrl) {
@@ -68,7 +75,7 @@ public class CountController {
             RequestMethod.TRACE
     })
     public void redirect(HttpServletResponse response) throws IOException {
-        response.sendRedirect("http://meethigher.top");
+        response.sendRedirect(protocol + "://" + domain);
     }
 
 }
