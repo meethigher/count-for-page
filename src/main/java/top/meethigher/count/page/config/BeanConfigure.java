@@ -3,11 +3,13 @@ package top.meethigher.count.page.config;
 import jodd.http.HttpRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
 import top.meethigher.cache.CacheStore;
 import top.meethigher.cache.impl.LeastRecentlyUsedCacheStore;
 import top.meethigher.count.page.entity.IP;
 
+import javax.sql.DataSource;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -42,5 +44,10 @@ public class BeanConfigure {
                 new LinkedBlockingDeque<>(Integer.MAX_VALUE),
                 new CustomizableThreadFactory("count-page-"),
                 new ThreadPoolExecutor.AbortPolicy());
+    }
+
+    @Bean
+    public JdbcTemplate jdbcTemplate(DataSource dataSource) {
+        return new JdbcTemplate(dataSource);
     }
 }

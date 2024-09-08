@@ -12,7 +12,7 @@ import java.util.Set;
  * @since 2022/11/19 15:41
  */
 @Entity
-@Table(uniqueConstraints = {@UniqueConstraint(columnNames = "url")})
+//@Table(uniqueConstraints = {@UniqueConstraint(columnNames = "url")})
 @EntityListeners(AuditingEntityListener.class)
 public class Link {
     /**

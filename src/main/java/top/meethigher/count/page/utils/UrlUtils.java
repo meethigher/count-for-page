@@ -24,6 +24,9 @@ public class UrlUtils {
      */
     public static String getRequestURI(String url, boolean includeProtocol) {
         try {
+            if (!(url.startsWith("http://") || url.startsWith("https://"))) {
+                url = "https://" + url;
+            }
             URL parsedUrl = new URL(url);
             if (includeProtocol) {
                 return parsedUrl.getProtocol() + "://" + parsedUrl.getHost() + parsedUrl.getPath();
@@ -35,5 +38,5 @@ public class UrlUtils {
             return null;
         }
     }
-    
+
 }
