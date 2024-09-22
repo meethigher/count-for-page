@@ -11,7 +11,9 @@ import top.meethigher.count.page.rest.controller.service.CountService;
 import javax.annotation.Resource;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -51,8 +53,10 @@ public class HTMLController {
     public String realTime(ModelMap map) {
         Collection<IP> values = cacheStore.toMap().values();
         if (!ObjectUtils.isEmpty(values)) {
+            ArrayList<IP> ipList = new ArrayList<>(values);
+            Collections.reverse(ipList);
             map.put("title", String.format("前%s条访问记录", values.size()));
-            map.put("today", values);
+            map.put("today", ipList);
         }
         return "/index";
     }

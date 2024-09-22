@@ -29,7 +29,7 @@ public class BeanConfigure {
 
     @Bean
     public CacheStore<Integer, IP> cacheStore() {
-        return new LeastRecentlyUsedCacheStore<>(80);
+        return new LeastRecentlyUsedCacheStore<>(5000);
     }
 
     @Bean
