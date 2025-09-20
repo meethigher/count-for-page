@@ -1,9 +1,13 @@
 package top.meethigher.count.page.rest.controller;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.server.ResponseStatusException;
 import top.meethigher.cache.CacheStore;
 import top.meethigher.count.page.entity.IP;
 import top.meethigher.count.page.rest.controller.service.CountService;
@@ -38,27 +42,41 @@ public class HTMLController {
     @Resource
     private CacheStore<Integer, IP> cacheStore;
 
+    @Value("${secret:123456789}")
+    private String secret;
+
     @GetMapping(value = "/today")
-    public String today(ModelMap map) {
-        List<IP> top = countService.getTodayIP();
-        if (!ObjectUtils.isEmpty(top)) {
-            String time = DateTimeFormatter.ofPattern("MM月dd日").format(LocalDate.now());
-            map.put("title", time + "统计" + top.size() + "条");
-            map.put("today", top);
+    public String today(ModelMap map,
+                        @RequestParam("secret") String pwd) {
+        if (!ObjectUtils.isEmpty(pwd) && secret.equals(pwd)) {
+            List<IP> top = countService.getTodayIP();
+            if (!ObjectUtils.isEmpty(top)) {
+                String time = DateTimeFormatter.ofPattern("MM月dd日").format(LocalDate.now());
+                map.put("title", time + "统计" + top.size() + "条");
+                map.put("today", top);
+            }
+            return "/index";
+        } else {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
         }
-        return "/index";
     }
 
-    @GetMapping("realTime")
-    public String realTime(ModelMap map) {
-        Collection<IP> values = cacheStore.toMap().values();
-        if (!ObjectUtils.isEmpty(values)) {
-            ArrayList<IP> ipList = new ArrayList<>(values);
-            Collections.reverse(ipList);
-            map.put("title", String.format("前%s条访问记录", values.size()));
-            map.put("today", ipList);
+    @GetMapping("/realTime")
+    public String realTime(ModelMap map,
+                           @RequestParam("secret") String pwd) {
+        if (!ObjectUtils.isEmpty(pwd) && secret.equals(pwd)) {
+            Collection<IP> values = cacheStore.toMap().values();
+            if (!ObjectUtils.isEmpty(values)) {
+                ArrayList<IP> ipList = new ArrayList<>(values);
+                Collections.reverse(ipList);
+                map.put("title", String.format("前%s条访问记录", values.size()));
+                map.put("today", ipList);
+            }
+            return "/index";
+        } else {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
         }
-        return "/index";
+
     }
 
     @GetMapping("/thread")
